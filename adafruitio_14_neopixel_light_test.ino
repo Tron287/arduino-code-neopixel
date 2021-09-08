@@ -16,14 +16,21 @@
 // and any additional configuration needed for WiFi, cellular,
 // or ethernet clients.
 #include "config.h"
-
+#include "numeric"
+#include "cmath"
 /************************ Example Starts Here *******************************/
 
 #include "Adafruit_NeoPixel.h"
 
-#define PIXEL_PIN     2 #d4 d1 mini 
+#define PIXEL_PIN     2 //d4 d1 mini 
 #define PIXEL_COUNT   1
 #define PIXEL_TYPE    NEO_GRB + NEO_KHZ800
+
+int colourfrompercent(int percent) {
+  int h; 
+  h = (percent * (100/360) + (100/360) / 100);
+  return h;
+}
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
