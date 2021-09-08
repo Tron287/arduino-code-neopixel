@@ -96,12 +96,12 @@ void loop()
 // this function is just converting a provided percentage to a hue value, for HSL
 int colourFromReading(int reading)
 {
-  int h;
+  float h;
   if (reading > MAXREAD)
   {
     reading = MAXREAD;
   }
-  h = (((reading / MAXREAD) * 100) * (100 / 360) + (100 / 360) / 100);
+  h = ((reading / MAXREAD) * 100) * 3.6;
   return h;
 }
 
@@ -117,14 +117,15 @@ void handleMessage(AdafruitIO_Data *data)
 
   Serial.print("received <- ");
   Serial.println(pm25Read);
+  Serial.print("colour 0-360 <- ");
+  Serial.println(colourFromReading((int)pm25Read));
 
-
-// write the current 'reading' to the led
-// #if defined(ARDUINO_ARCH_ESP32)
-//   ledcWrite(1, reading); // ESP32 analogWrite()
-// #else
-//   analogWrite(LED_PIN, reading);
-// #endif
+  // write the current 'reading' to the led
+  // #if defined(ARDUINO_ARCH_ESP32)
+  //   ledcWrite(1, reading); // ESP32 analogWrite()
+  // #else
+  //   analogWrite(LED_PIN, reading);
+  // #endif
 
   pixels.clear(); // Set all pixel colors to 'off'
 
@@ -133,9 +134,8 @@ void handleMessage(AdafruitIO_Data *data)
   for (int i = 0; i < NUMPIXELS; i++)
   { // For each pixel...
 
-    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-    // Here we're using a moderately bright green color:
-    uint32_t rgbcolor = pixels.gamma32(pixels.ColorHSV(colourFromReading(pm25Read), 0.5, 1));
+
+    uint32_t rgbcolor = pixels.gamma32(pixels.ColorHSV(colourFromReading(pm25Read), 255, 255));
 
     pixels.setPixelColor(i, rgbcolor);
 
