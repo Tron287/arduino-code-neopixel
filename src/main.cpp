@@ -24,6 +24,7 @@
 #define NUMPIXELS 1
 #define NEOPIXEL_TYPE NEO_GRB
 #define DELAYVAL 100
+#define MAXREAD 300
 /************************ /Configuration *******************************/
 
 // When setting up the NeoPixel library, we tell it how many pixels,
@@ -42,6 +43,7 @@ AdafruitIO_Feed *pm10 = io.feed("particulate-matter.pm-10");
 AdafruitIO_Feed *pm1 = io.feed("particulate-matter.pm1");
 
 void handleMessage(AdafruitIO_Data *data);
+int colourfrompercent(int percent);
 
 void setup()
 {
@@ -91,6 +93,19 @@ void loop()
   io.run();
 }
 
+// this function is just converting a provided percentage to a hue value, for HSL
+int colourFromReading(int reading)
+{
+  int h;
+  if (reading > MAXREAD)
+  {
+    reading = MAXREAD;
+  }
+  h = (((reading / MAXREAD) * 100) * (100 / 360) + (100 / 360) / 100);
+  return h;
+}
+
+
 // this function is called whenever an 'analog' message
 // is received from Adafruit IO. it was attached to
 // the analog feed in the setup() function above.
@@ -98,10 +113,11 @@ void handleMessage(AdafruitIO_Data *data)
 {
 
   // convert the data to integer
-  int reading = data->toInt();
+  int pm25Read = data->toInt();
 
   Serial.print("received <- ");
-  Serial.println(reading);
+  Serial.println(pm25Read);
+
 
 // write the current 'reading' to the led
 // #if defined(ARDUINO_ARCH_ESP32)
@@ -119,7 +135,16 @@ void handleMessage(AdafruitIO_Data *data)
 
     // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
     // Here we're using a moderately bright green color:
-    pixels.setPixelColor(i, pixels.Color(0, (int)reading, 0));
+    uint32_t rgbcolor = pixels.gamma32(pixels.ColorHSV(colourFromReading(pm25Read), 0.5, 1));
+
+    pixels.setPixelColor(i, rgbcolor);
+
+    /*
+    for addressing the leds directly..
+    uint32_t rgbcolor = pixels.gamma32(pixels.ColorHSV(colourFromReading(pm10Read, 30), 0.5, 1));
+
+    pixels.setPixelColor(2, rgbcolor);
+    */
 
     pixels.show(); // Send the updated pixel colors to the hardware.
 
